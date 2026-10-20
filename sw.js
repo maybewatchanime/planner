@@ -1,5 +1,6 @@
-// Офлайн-кэш планера. При обновлении файлов увеличь номер версии.
-const CACHE = 'planner-v1';
+// Офлайн-кэш планера. Страница берётся из сети, если она доступна (так обновления приходят сами),
+// а без интернета — из кэша.
+const CACHE = 'planner-v2';
 const FILES = ['./', './index.html', './manifest.json', './icon-180.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
@@ -13,14 +14,27 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  if (e.request.method !== 'GET') return;
-  e.respondWith(
-    caches.match(e.request, { ignoreSearch: true }).then(hit => hit || fetch(e.request).then(res => {
-      if (res.ok && new URL(e.request.url).origin === location.origin) {
-        const copy = res.clone();
-        caches.open(CACHE).then(c => c.put(e.request, copy));
+  const req = e.request;
+  if (req.method !== 'GET' || new URL(req.url).origin !== location.origin) return;
+
+  if (req.mode === 'navigate') {
+    e.respondWith((async () => {
+      const cache = await caches.open(CACHE);
+      try {
+        const res = await Promise.race([fetch(req), new Promise((_, rej) => setTimeout(rej, 3000))]);
+        if (res.ok) cache.put('./index.html', res.clone());
+        return res;
+      } catch (_) {
+        return (await cache.match('./index.html')) || (await cache.match('./')) || Response.error();
       }
+    })());
+    return;
+  }
+
+  e.respondWith(
+    caches.match(req, { ignoreSearch: true }).then(hit => hit || fetch(req).then(res => {
+      if (res.ok) { const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)); }
       return res;
-    }).catch(() => caches.match('./index.html')))
+    }))
   );
 });
