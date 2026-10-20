@@ -1,6 +1,6 @@
 // Офлайн-кэш планера. Страница берётся из сети, если она доступна (так обновления приходят сами),
 // а без интернета — из кэша.
-const CACHE = 'planner-v3';
+const CACHE = 'planner-v4';
 const FILES = ['./', './index.html', './manifest.json', './icon-180.png', './icon-512.png'];
 
 self.addEventListener('install', e => {

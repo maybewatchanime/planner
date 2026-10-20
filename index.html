@@ -85,6 +85,27 @@ main.in-fade{animation:fadeIn .32s var(--ease)}
 /* Today */
 .hero{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;margin:0 4px 4px;color:var(--muted);font-size:15px}
 .hero b{color:var(--ink);font-weight:600}
+.qadd{display:flex;gap:8px;align-items:stretch}
+.qadd .inp{flex:1;min-width:0;padding:12px 14px}
+.qadd button{flex:none;border-radius:12px;font-weight:600;font-size:14px}
+#qDate{padding:0 12px;background:var(--surface);border:1px solid var(--line);color:var(--accent);min-width:92px;transition:transform .3s var(--spring)}
+#qDate:active{transform:scale(.94)}
+#qGo{width:46px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;transition:transform .3s var(--spring)}
+#qGo:active{transform:scale(.9)}
+#qGo svg{width:22px;height:22px}
+.chips{display:flex;gap:6px;overflow-x:auto;margin:12px -16px 0;padding:0 16px 2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chips button{flex:none;display:flex;align-items:center;gap:6px;padding:7px 13px;border-radius:18px;background:var(--surface);border:1px solid var(--line);font-size:14px;font-weight:600;transition:background .2s,color .2s,border-color .2s}
+.chips button i{width:8px;height:8px;border-radius:50%}
+.chips button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.chips button.on i{box-shadow:0 0 0 1.5px var(--accent-ink)}
+.cnt{font-weight:600;color:var(--muted);font-size:13px}
+.togg{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;margin:24px 0 8px;padding:0 4px;color:var(--muted)}
+.togg h2{margin:0;font:650 18px var(--round);color:var(--muted)}
+.togg .arr{transition:transform .35s var(--spring)}
+.togg.open .arr{transform:rotate(90deg)}
+.allclear{text-align:center;padding:34px 16px 10px;color:var(--muted)}
+.allclear b{display:block;font:650 19px var(--round);color:var(--ink);margin-bottom:4px}
 .parity{color:var(--accent);font-weight:650;font-size:13px;padding:2px 9px;border-radius:9px;background:color-mix(in srgb,var(--accent) 12%,transparent)}
 
 /* Calendar */
@@ -348,14 +369,14 @@ textarea.inp.big{min-height:30vh}
 <div id="app">
   <header class="top">
     <button id="back" aria-label="Назад" hidden>‹</button>
-    <h1 id="title">Сегодня</h1>
+    <h1 id="title">Задачи</h1>
     <button id="searchBtn" aria-label="Поиск"></button>
     <button id="action"></button>
   </header>
   <main id="view"></main>
   <button class="fab" id="fab" aria-label="Добавить"></button>
   <nav class="tabs">
-    <button data-tab="today"></button>
+    <button data-tab="tasks"></button>
     <button data-tab="cal"></button>
     <button data-tab="folders"></button>
   </nav>
@@ -385,6 +406,7 @@ const WEEKS = { all:'Каждую неделю', odd:'Нечётная', even:'�
 
 const sv = (p, w=1.8) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
 const ICON = {
+  tasks: sv('<rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="m8 12.2 2.7 2.7L16.2 9.3"/>'),
   today: sv('<circle cx="12" cy="12" r="4"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/>'),
   cal: sv('<rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/>'),
   folder: sv('<path d="M3.5 7.5a2 2 0 0 1 2-2h4l2 2.5h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/>'),
@@ -509,7 +531,7 @@ function seed(){
   const s = uid(), p = uid();
   return sanitize({ folders:[{id:s,name:'Учёба',color:COLORS[1],icon:'cap'},{id:p,name:'Личное',color:COLORS[0],icon:'home'}],
     items:[{id:uid(),folderId:p,type:'note',title:'Как пользоваться',pin:true,
-      body:'### Коротко\n- **Сегодня**: пары, дела на день и ближайшая неделя\n- **Календарь**: дни с делами подсвечены цветом папки\n- **Папки**: задачи и заметки по темам\n\n### Жесты\n- Свайп записи вправо: выполнить\n- Свайп влево: удалить (можно отменить)\n- Свайп от левого края: назад\n\n### Заметки понимают разметку\n- [x] **жирный**, *курсив*, ~~зачёркнутый~~\n- [ ] чек-листы можно отмечать прямо в заметке\n\nРасписание пар и тема: «Ещё» вверху справа.',
+      body:'### Коротко\n- **Задачи**: все невыполненные задачи, быстрое добавление сверху\n- **Календарь**: дни с делами подсвечены цветом папки, пары и план дня по часам\n- **Папки**: задачи и заметки по темам\n\n### Жесты\n- Свайп записи вправо: выполнить\n- Свайп влево: удалить (можно отменить)\n- Свайп от левого края: назад\n\n### Заметки понимают разметку\n- [x] **жирный**, *курсив*, ~~зачёркнутый~~\n- [ ] чек-листы можно отмечать прямо в заметке\n\nРасписание пар и тема: «Ещё» вверху справа.',
       date:null,done:false,updated:Date.now(),atts:[]}] });
 }
 
@@ -645,7 +667,7 @@ function mdPlain(s){
 
 /* ---------- state ---------- */
 const now0 = new Date();
-let st = { tab:'today', folder:null, search:false, q:'', filter:'all', sel:today(), month:new Date(now0.getFullYear(), now0.getMonth(), 1) };
+let st = { tab:'tasks', tf:'all', qd:0, showDone:false, folder:null, search:false, q:'', filter:'all', sel:today(), month:new Date(now0.getFullYear(), now0.getMonth(), 1) };
 let lastToday = today();
 
 function fmtShort(s){
@@ -707,6 +729,7 @@ function row(x, o={}){
   if (f) meta.push(`<span class="chip"><i style="background:${okColor(f.color)}"></i>${esc(f.name)}</span>`);
   if (rec){ const n = occ ? null : nextOcc(x); meta.push(`<span class="chip">${ICON.repeat}${REPEATS[x.repeat.freq]}${n ? ' · '+fmtShort(n) : ''}${x.time && !o.time ? ', '+x.time : ''}</span>`); }
   else if (x.date && !o.noDate) meta.push(`<span class="${isLate(x)?'late':''}">${fmtShort(x.date)}${x.time?', '+x.time:''}</span>`);
+  else if (x.time && o.noDate && !o.time) meta.push(`<span>${x.time}</span>`);
   if (x.subs.length) meta.push(`<span class="chip">${ICON.list}${x.subs.filter(s=>s.done).length}/${x.subs.length}</span>`);
   if (x.atts.length) meta.push(`<span class="chip">${ICON.clip}${x.atts.length}</span>`);
   const th = x.atts.find(a => a.thumb);
@@ -759,7 +782,7 @@ function header(){
   const back = $('#back'), act = $('#action'), h = $('#title'), sb = $('#searchBtn'); let t;
   document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab===st.tab && !st.search));
   if (st.search){ t = 'Поиск'; act.textContent = ''; }
-  else if (st.tab==='today'){ t = 'Сегодня'; act.textContent = 'Ещё'; }
+  else if (st.tab==='tasks'){ t = 'Задачи'; act.textContent = 'Ещё'; }
   else if (st.tab==='cal'){ t = 'Календарь'; act.textContent = 'Ещё'; }
   else if (st.folder){ t = folderById(st.folder).name; act.textContent = 'Изменить'; }
   else { t = 'Папки'; act.textContent = 'Ещё'; }
@@ -772,34 +795,78 @@ function render(){
   if (st.folder && !folderById(st.folder)) st.folder = null;
   header();
   if (st.search) renderSearch();
-  else if (st.tab==='today') renderToday();
+  else if (st.tab==='tasks') renderTasks();
   else if (st.tab==='cal') renderCal();
   else if (st.folder) renderFolder(folderById(st.folder));
   else renderFolders();
 }
 function refresh(){
   if (st.search){ const r = $('#sRes'); if (r) flip(() => { r.innerHTML = searchRes(); }); return; }
+  if (st.tab==='tasks' && $('#tBody')){ flip(() => { $('#tBody').innerHTML = tasksBody(); updChips(); }); return; }
   if (st.tab==='cal' && $('#grid')){ flip(() => { $('#grid').innerHTML = gridCells(); $('#dayPane').innerHTML = dayPane(); }); return; }
   if (st.tab==='folders' && st.folder && $('#fBody')){ flip(() => { $('#fBody').innerHTML = folderBody(folderById(st.folder)); header(); }); return; }
   flip(render);
 }
 
-function renderToday(){
-  const t = today(), les = lessonsOn(t);
-  const occ = itemsOn(t), open = occ.filter(x => !(x.type==='task' && doneAt(x,t))).length;
-  const imp = db.items.filter(x => x.type==='task' && x.pin && !x.date && !x.done);
-  let up = '';
-  for (let i=1;i<=7;i++){
-    const k = addDays(t,i), its = db.items.filter(x => !x.repeat && x.date===k);
-    if (its.length) up += `<div class="sub small">${i===1 ? 'Завтра' : dayTitle(k)}</div>${list(its, {folder:true, noDate:true})}`;
+const QD = ['Без даты','Сегодня','Завтра'];
+function renderTasks(){
+  view.innerHTML = `<div class="qadd"><input class="inp" id="qIn" type="text" placeholder="Новая задача" autocomplete="off" enterkeyhint="done" aria-label="Новая задача"><button id="qDate">${QD[st.qd]}</button><button id="qGo" aria-label="Добавить">${ICON.plus}</button></div>
+    <div class="chips" id="tChips"></div><div id="tBody">${tasksBody()}</div>`;
+  updChips();
+  const keep = (id, fn) => $(id).addEventListener('touchstart', e => { e.preventDefault(); fn(); }, {passive:false});
+  keep('#qGo', quickAdd);
+  keep('#qDate', () => { st.qd = (st.qd+1)%3; $('#qDate').textContent = QD[st.qd]; });
+}
+function updChips(){
+  const c = $('#tChips'); if (!c) return;
+  if (st.tf!=='all' && !folderById(st.tf)) st.tf = 'all';
+  const open = f => db.items.filter(x => x.type==='task' && (f==='all' || x.folderId===f) && (x.repeat ? !(occursOn(x,today()) && doneAt(x,today())) : !x.done)).length;
+  c.innerHTML = `<button data-tf="all" class="${st.tf==='all'?'on':''}">Все <span class="cnt">${open('all')}</span></button>` +
+    db.folders.map(f => `<button data-tf="${f.id}" class="${st.tf===f.id?'on':''}"><i style="background:${okColor(f.color)}"></i>${esc(f.name)}</button>`).join('');
+  c.querySelectorAll('.on .cnt').forEach(e => e.style.color = 'inherit');
+}
+function tasksBody(){
+  const t = today(), tm = addDays(t,1), wk = addDays(t,7), fo = st.tf==='all';
+  const all = db.items.filter(x => x.type==='task' && (fo || x.folderId===st.tf));
+  const g = { late:[], today:[], tom:[], week:[], later:[], nodate:[], rep:[], done:[] };
+  for (const x of all){
+    if (x.repeat){
+      if (occursOn(x,t) && !x.doneDates.includes(t)) g.today.push(x); else g.rep.push(x);
+      continue;
+    }
+    if (x.done){ g.done.push(x); continue; }
+    if (!x.date) g.nodate.push(x);
+    else if (x.date < t) g.late.push(x);
+    else if (x.date===t) g.today.push(x);
+    else if (x.date===tm) g.tom.push(x);
+    else if (x.date<=wk) g.week.push(x);
+    else g.later.push(x);
   }
-  const parity = db.schedule.lessons.length ? `<span class="parity">${weekOdd(t) ? 'нечётная неделя' : 'чётная неделя'}</span>` : '';
-  const sum = [les.length && plural(les.length,['пара','пары','пар']), open && plural(open,['дело','дела','дел'])].filter(Boolean).join(', ');
-  view.innerHTML = `<div class="hero"><b>${dayTitle(t)}</b>${parity}</div>
-    ${lateBlock()}
-    <div class="sechead"><h2>План на день</h2><small>${sum}</small></div>${agenda(t)}
-    ${imp.length ? `<div class="sechead"><h2>Важное без даты</h2></div>${list(imp, {folder:true})}` : ''}
-    ${up ? `<div class="sechead"><h2>Ближайшие 7 дней</h2></div>${up}` : ''}`;
+  const o = { folder:fo };
+  const sec = (title, arr, opt=o, extra='') => arr.length ? `<div class="sechead ${title==='Просрочено'?'warn':''}"><h2>${title}</h2>${extra || `<small>${arr.length}</small>`}</div>${list(arr, opt)}` : '';
+  const openN = g.late.length+g.today.length+g.tom.length+g.week.length+g.later.length+g.nodate.length;
+  let h = '';
+  if (!openN) h += `<div class="allclear"><b>Невыполненных задач нет</b>Добавьте задачу в поле сверху или кнопкой +.</div>`;
+  h += sec('Просрочено', g.late, o, `<button class="minibtn" id="moveLate">На сегодня · ${g.late.length}</button>`);
+  h += sec('Сегодня', g.today, {...o, occ:t, noDate:true});
+  h += sec('Завтра', g.tom, {...o, noDate:true});
+  h += sec('На неделе', g.week);
+  h += sec('Позже', g.later);
+  h += sec('Без даты', g.nodate);
+  h += sec('Повторяющиеся', g.rep);
+  if (g.done.length){
+    const d = g.done.sort((a,b) => b.updated-a.updated).slice(0,50);
+    h += `<button class="togg ${st.showDone?'open':''}" id="doneTog"><h2>Выполнено · ${g.done.length}</h2><span class="arr">›</span></button>`;
+    if (st.showDone) h += `<ul class="list" id="doneList">${d.map(x => row(x, o)).join('')}</ul>`;
+  }
+  return h;
+}
+function quickAdd(){
+  const inp = $('#qIn'), v = inp.value.trim(); if (!v) return;
+  const fid = st.tf!=='all' && folderById(st.tf) ? st.tf : ensureFolder();
+  const date = st.qd===1 ? today() : st.qd===2 ? addDays(today(),1) : null;
+  db.items.push({ id:uid(), folderId:fid, type:'task', title:v, body:'', date, time:null, repeat:null, doneDates:[], skip:[], done:false, pin:false, subs:[], atts:[], updated:Date.now() });
+  inp.value = ''; save(); refresh();
 }
 
 function gridCells(){
@@ -827,7 +894,8 @@ function dayPane(){
   const occ = itemsOn(st.sel), les = lessonsOn(st.sel);
   const open = occ.filter(x => !(x.type==='task' && doneAt(x,st.sel))).length;
   const sum = [les.length && plural(les.length,['пара','пары','пар']), open && plural(open,['дело','дела','дел'])].filter(Boolean).join(', ');
-  return `<div class="sechead"><h2>${dayTitle(st.sel)}</h2><small>${sum}</small></div>${agenda(st.sel)}${st.sel===today() ? lateBlock() : ''}`;
+  const par = les.length ? ` · ${weekOdd(st.sel) ? 'нечёт.' : 'чёт.'} неделя` : '';
+  return `<div class="sechead"><h2>${dayTitle(st.sel)}</h2><small>${sum}${par}</small></div>${agenda(st.sel)}${st.sel===today() ? lateBlock() : ''}`;
 }
 function renderCal(){
   view.innerHTML = `
@@ -1610,6 +1678,12 @@ view.addEventListener('click', e => {
   const it = e.target.closest('.item');
   if (it){ const x = db.items.find(i => i.id===it.dataset.id); if (x) editItem(x, it.dataset.occ || undefined); return; }
   if (e.target.closest('#moveLate')) return moveLate();
+  if (e.target.closest('#qGo')){ quickAdd(); $('#qIn').focus(); return; }
+  const qd = e.target.closest('#qDate');
+  if (qd){ st.qd = (st.qd+1)%3; qd.textContent = QD[st.qd]; if (!REDUCE) qd.animate([{transform:'scale(.9)'},{transform:'none'}], {duration:250,easing:SPRING}); return; }
+  const tf = e.target.closest('[data-tf]');
+  if (tf){ if (tf.dataset.tf===st.tf) return; st.tf = tf.dataset.tf; updChips(); const b = $('#tBody'); b.innerHTML = tasksBody(); fadeIn(b); return; }
+  if (e.target.closest('#doneTog')){ st.showDone = !st.showDone; flip(() => { $('#tBody').innerHTML = tasksBody(); }); return; }
   const day = e.target.closest('[data-date]');
   if (day){ if (day.dataset.date!==st.sel) selectDay(day.dataset.date); return; }
   const fr = e.target.closest('[data-folder]');
@@ -1634,6 +1708,8 @@ view.addEventListener('click', e => {
   }
   if (e.target.closest('#newFolder')) editFolder({});
 });
+view.addEventListener('mousedown', e => { if (e.target.closest('#qGo,#qDate')) e.preventDefault(); });
+view.addEventListener('keydown', e => { if (e.target.id==='qIn' && e.key==='Enter'){ e.preventDefault(); quickAdd(); } });
 view.addEventListener('input', e => { if (e.target.id==='q'){ st.q = e.target.value; $('#sRes').innerHTML = searchRes(); } });
 
 let T = null;
@@ -1689,7 +1765,7 @@ $('#back').onclick = () => swap('pop', () => { if (st.search) st.search = false;
 $('#searchBtn').onclick = () => { swap('push', () => { st.search = true; st.q = ''; }); $('#q')?.focus(); };
 $('#action').onclick = () => { if (st.search) return; if (st.tab==='folders' && st.folder) editFolder(folderById(st.folder)); else settings(); };
 $('#fab').onclick = () => {
-  if (st.tab==='today') editItem({ type:'task', date:today(), folderId:ensureFolder() });
+  if (st.tab==='tasks') editItem({ type:'task', folderId: st.tf!=='all' && folderById(st.tf) ? st.tf : ensureFolder() });
   else if (st.tab==='cal') editItem({ type:'task', date:st.sel, folderId:ensureFolder() });
   else if (st.folder) editItem({ type: st.filter==='note' ? 'note' : 'task', folderId:st.folder });
   else editFolder({});
@@ -1697,7 +1773,7 @@ $('#fab').onclick = () => {
 document.addEventListener('keydown', e => { if (e.key==='Escape'){ if (vs) closeViewer(); else closeSheet(); } });
 
 /* ---------- init ---------- */
-document.querySelector('[data-tab="today"]').innerHTML = ICON.today+'Сегодня';
+document.querySelector('[data-tab="tasks"]').innerHTML = ICON.tasks+'Задачи';
 document.querySelector('[data-tab="cal"]').innerHTML = ICON.cal+'Календарь';
 document.querySelector('[data-tab="folders"]').innerHTML = ICON.folder+'Папки';
 $('#fab').innerHTML = ICON.plus;
@@ -1709,9 +1785,9 @@ loadDb().then(d => {
 document.addEventListener('visibilitychange', () => {
   if (document.hidden || !db) return;
   if (today()!==lastToday){ lastToday = today(); st.sel = today(); render(); }
-  else if (st.tab==='today' && !st.search) refresh();
+  else if (st.tab==='tasks' && !st.search) refresh();
 });
-setInterval(() => { if (db && !document.hidden && st.tab==='today' && !st.search && $('#sheetWrap').hidden) refresh(); }, 60000);
+setInterval(() => { if (db && !document.hidden && st.tab==='tasks' && !st.search && $('#sheetWrap').hidden) refresh(); }, 60000);
 if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(()=>{});
 if ('serviceWorker' in navigator && location.protocol==='https:') navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
